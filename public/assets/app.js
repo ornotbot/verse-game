@@ -2,7 +2,7 @@
   const $ = (id) => document.getElementById(id);
   const state = {
     anon: null, day: null, tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-    guesses: [], cur: "", over: false, result: null, botShown: 0, botTimer: null,
+    guesses: [], cur: "", over: false, result: null,
   };
   const keyOf = (d) => `verse_${d}`;
 
@@ -125,46 +125,22 @@
     paintRow($("grid-you"), state.guesses.length - 1, g, fb);
     updateKeys(g, fb);
     const solved = g === state.day.word;
-    scheduleBot();
     const n = state.guesses.length, botTotal = state.day.bot.length;
     if (solved) {
-      // result settles after the Bot's matching guess reveals (tie detection)
-      setTimeout(() => finish(n < botTotal ? "win" : n === botTotal ? "tie" : "loss"), 3200);
+      setTimeout(() => finish(n < botTotal ? "win" : n === botTotal ? "tie" : "loss"), 900);
     } else if (n >= 6) {
-      setTimeout(() => finish("loss"), 3200);
+      setTimeout(() => finish("loss"), 900);
     }
-  }
-
-  // ---------- the Bot ----------
-  function scheduleBot() {
-    if (state.botShown >= state.day.bot.length) return;
-    $("bot-status").textContent = "thinking\u2026";
-    clearTimeout(state.botTimer);
-    state.botTimer = setTimeout(() => {
-      const i = state.botShown;
-      paintProgress($("grid-bot"), i, state.day.bot[i].fb);
-      state.botShown++;
-      if (state.botShown >= state.day.bot.length && !state.over) {
-        // the Bot solved first (player still going)
-        if (state.guesses.length < 6 && state.guesses[state.guesses.length - 1] !== state.day.word) {
-          finish("loss");
-          return;
-        }
-      }
-      $("bot-status").textContent = state.botShown >= state.day.bot.length ? "done" : "";
-    }, 2500);
   }
 
   // ---------- finish / persist ----------
   async function finish(result) {
     if (state.over) return;
     state.over = true;
-    clearTimeout(state.botTimer);
     // reveal: repaint the Bot's full run with letters and colors
     for (let i = 0; i < state.day.bot.length; i++) {
       paintRow($("grid-bot"), i, state.day.bot[i].guess, state.day.bot[i].fb);
     }
-    state.botShown = state.day.bot.length;
     const solved = state.guesses[state.guesses.length - 1] === state.day.word;
     const num = solved ? state.guesses.length : 7;
     state.result = { result, num, guesses: state.guesses.slice() };
@@ -309,8 +285,7 @@
   function startGame(replay) {
     buildGrid($("grid-you")); buildGrid($("grid-bot")); buildKeyboard();
     Object.keys(keyState).forEach((k) => delete keyState[k]);
-    state.guesses = []; state.cur = ""; state.botShown = 0; state.over = false;
-    $("bot-status").textContent = "";
+    state.guesses = []; state.cur = ""; state.over = false;
     if (replay) {
       const saved = state.result;
       saved.guesses.forEach((g, i) => {
@@ -322,9 +297,9 @@
       show("screen-result");
       return;
     }
+    // the Bot's run sits on the board from the start - colors only, blank tiles
+    state.day.bot.forEach((st, i) => paintProgress($("grid-bot"), i, st.fb));
     show("screen-game");
-    $("bot-target").textContent = `The Bot solved today's in ${state.day.bot.length}.`;
-    $("bot-status").textContent = "The Bot plays after your first guess.";
   }
 
   async function init() {
