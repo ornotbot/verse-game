@@ -37,6 +37,26 @@
   }
   const emoji = { correct: "\u{1F7E9}", present: "\u{1F7E8}", absent: "\u2B1B" };
 
+  // ---------- Bot quips (canned, dry, by outcome and margin) ----------
+  const QUIPS = {
+    win_close: ["Took me {b}. Take your win.", "Beaten by one. Well played."],
+    win_mid: ["Outplayed - {n} to my {b}.", "Clean solve. I tip my circuits."],
+    win_blow: ["{n} rounds? I need a better dictionary.", "That was decisive. Respect."],
+    loss_close: ["Had it in {b}. Unlucky.", "One round short. Tomorrow?"],
+    loss_mid: ["Got there first - {b} rounds.", "Close race. Mine this time."],
+    loss_blow: ["{b} rounds. I don't lose often.", "Better luck tomorrow."],
+    tie: ["Dead heat. Again tomorrow?", "Same number. Great minds."],
+  };
+  function botQuip() {
+    const { result, num } = state.result, b = state.day.bot.length;
+    const m = Math.abs(num - b);
+    const bucket = result === "tie" ? "tie"
+      : (result === "win" ? "win" : "loss") + (m >= 3 ? "_blow" : m === 2 ? "_mid" : "_close");
+    const lines = QUIPS[bucket];
+    let h = 0; for (const c of state.day.date + bucket) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return lines[h % lines.length].replace("{b}", b).replace("{n}", num);
+  }
+
   // ---------- grids ----------
   function buildGrid(el, mini) {
     el.innerHTML = "";
@@ -53,15 +73,6 @@
       t.classList.remove("filled", "correct", "present", "absent", "progress", "pop");
       if (fb) t.classList.add(fb[i]);
       else if (word[i]) t.classList.add("filled");
-    });
-  }
-  // Bot mid-game rows: colors only, no letters - a color can't be mapped to an unseen letter
-  function paintProgress(gridEl, rowIdx, fb) {
-    const row = gridEl.children[rowIdx]; if (!row) return;
-    [...row.children].forEach((t, i) => {
-      t.textContent = "";
-      t.classList.remove("filled", "correct", "present", "absent");
-      t.classList.add(fb[i]);
     });
   }
 
@@ -137,10 +148,7 @@
   async function finish(result) {
     if (state.over) return;
     state.over = true;
-    // reveal: repaint the Bot's full run with letters and colors
-    for (let i = 0; i < state.day.bot.length; i++) {
-      paintRow($("grid-bot"), i, state.day.bot[i].guess, state.day.bot[i].fb);
-    }
+    $("bot-status").textContent = "";
     const solved = state.guesses[state.guesses.length - 1] === state.day.word;
     const num = solved ? state.guesses.length : 7;
     state.result = { result, num, guesses: state.guesses.slice() };
@@ -159,8 +167,11 @@
         body: JSON.stringify({ anon_id: state.anon, date: state.day.date, guesses: state.guesses, result }),
       });
     } catch { /* stats are nice-to-have */ }
-    renderResult(stats);
-    show("screen-result");
+    // the reveal: the Bot's run replays live, row by row, then the verdict
+    const steps = state.day.bot;
+    buildGrid($("grid-bot"));
+    steps.forEach((st, i) => setTimeout(() => paintRow($("grid-bot"), i, st.guess, st.fb), 500 + i * 1500));
+    setTimeout(() => { renderResult(stats); show("screen-result"); }, 500 + steps.length * 1500 + 800);
   }
 
   function gridText(guesses) {
@@ -185,6 +196,7 @@
   }
   function renderResult(stats) {
     $("result-line").textContent = headline();
+    $("bot-quip").textContent = "\x22" + botQuip() + "\x22";
     const rg = $("result-grids"); rg.innerHTML = "";
     const mk = (label, gridEl) => {
       const wrap = document.createElement("div");
@@ -297,9 +309,8 @@
       show("screen-result");
       return;
     }
-    // the Bot's run sits on the board from the start - colors only, blank tiles
-    state.day.bot.forEach((st, i) => paintProgress($("grid-bot"), i, st.fb));
     show("screen-game");
+    $("bot-status").textContent = "The Bot is waiting.";
   }
 
   async function init() {
