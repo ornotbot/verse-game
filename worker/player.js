@@ -56,16 +56,28 @@ After each guess you get per-letter feedback: C = right letter, right spot. P = 
 Play smart: use the feedback, keep letters marked C in place, move letters marked P, drop letters marked A.
 Reply with ONLY your guess: one real 5-letter English word, lowercase, no punctuation, no explanation.`;
 
-const MODELS = ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/meta/llama-3.1-8b-instruct'];
+export const MODEL_SETS = {
+  llama: [{ id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', maxTokens: 24, reasoning: false },
+          { id: '@cf/meta/llama-3.1-8b-instruct', maxTokens: 24, reasoning: false }],
+  r1: [{ id: '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b', maxTokens: 900, reasoning: true },
+       { id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', maxTokens: 24, reasoning: false }],
+};
 
-async function ask(ai, messages) {
+async function ask(ai, messages, models) {
   let lastErr;
-  for (const m of MODELS) {
+  for (const m of models) {
     try {
-      const r = await ai.run(m, { messages, max_tokens: 24, temperature: 0.6 });
-      const text = (r && r.response) || '';
-      const match = text.toLowerCase().match(/[a-z]{5}/);
-      if (match) return { word: match[0], model: m };
+      const r = await ai.run(m.id, { messages, max_tokens: m.maxTokens, temperature: 0.6 });
+      let text = (r && r.response) || '';
+      if (m.reasoning) {
+        // R1-style models emit a thinking trace; only the post-think text counts
+        const i = text.indexOf('</think>');
+        if (i >= 0) text = text.slice(i + 8);
+      }
+      // final answer tends to be last; prefer the last token that's an allowed word
+      const toks = text.toLowerCase().match(/\b[a-z]{5}\b/g) || [];
+      const word = [...toks].reverse().find((w) => ALLOWED_SET.has(w)) || toks[toks.length - 1];
+      if (word) return { word, model: m.id };
       lastErr = new Error('unparseable: ' + text.slice(0, 60));
     } catch (e) { lastErr = e; }
   }
@@ -73,7 +85,8 @@ async function ask(ai, messages) {
 }
 
 // Play one full game. Returns { path, model, fallbacks } where path = [{guess, fb}].
-export async function playWord(answer, ai) {
+export async function playWord(answer, ai, models) {
+  models = models || MODEL_SETS.llama;
   const messages = [{ role: 'system', content: SYSTEM }];
   const path = [];
   let cands = RANKED.slice();
@@ -106,7 +119,7 @@ export async function playWord(answer, ai) {
     for (let attempt = 0; attempt < 3 && !guess; attempt++) {
       if (attempt > 0) messages.push({ role: 'user', content: why + ' Reply with one allowed 5-letter English word that fits every clue, nothing else.' });
       try {
-        const r = await ask(ai, messages);
+        const r = await ask(ai, messages, models);
         model = r.model;
         if (!ALLOWED_SET.has(r.word)) { why = `"${r.word}" is not in the allowed word list.`; continue; }
         const bad = path.find((p) => feedback(p.guess, r.word).join() !== p.fb.join());
