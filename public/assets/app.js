@@ -4,11 +4,11 @@
     anon: null, day: null, tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
     guesses: [], cur: "", over: false, result: null, botShown: 0, botTimer: null,
   };
-  const keyOf = (d) => `btb_${d}`;
+  const keyOf = (d) => `verse_${d}`;
 
   function anonId() {
-    let a = localStorage.getItem("btb_anon");
-    if (!a) { a = crypto.randomUUID(); localStorage.setItem("btb_anon", a); }
+    let a = localStorage.getItem("verse_anon");
+    if (!a) { a = crypto.randomUUID(); localStorage.setItem("verse_anon", a); }
     return a;
   }
   async function api(path, opts) {
@@ -162,11 +162,11 @@
     state.result = { result, num, guesses: state.guesses.slice() };
     localStorage.setItem(keyOf(state.day.date), JSON.stringify(state.result));
     if (result === "win") {
-      const s = (parseInt(localStorage.getItem("btb_streak") || "0", 10) + 1);
-      localStorage.setItem("btb_streak", String(s));
-      localStorage.setItem("btb_streak_date", state.day.date);
+      const s = (parseInt(localStorage.getItem("verse_streak") || "0", 10) + 1);
+      localStorage.setItem("verse_streak", String(s));
+      localStorage.setItem("verse_streak_date", state.day.date);
     } else if (result === "loss") {
-      localStorage.setItem("btb_streak", "0");
+      localStorage.setItem("verse_streak", "0");
     }
     let stats = null;
     try {
@@ -197,7 +197,7 @@
       result === "win" ? `I beat the Bot in ${num}/6 (it took ${botN}).` :
       result === "tie" ? `Dead heat with the Bot - both in ${num}/6.` :
       `The Bot beat me - it took ${botN}/6.`;
-    return [`Beat the Bot #${state.day.day_number}`, first, gridText(state.result.guesses)].join("\n");
+    return [`Verse #${state.day.day_number}`, first, gridText(state.result.guesses)].join("\n");
   }
   function renderResult(stats) {
     $("result-line").textContent = headline();
@@ -243,7 +243,7 @@
     ctx.beginPath(); ctx.roundRect(30, 30, W - 60, H - 60, 40); ctx.stroke();
     ctx.textAlign = "center"; ctx.fillStyle = "#f2f4f8";
     ctx.font = "800 64px -apple-system, Segoe UI, Arial";
-    ctx.fillText(`Beat the Bot #${state.day.day_number}`, W / 2, 130);
+    ctx.fillText(`Verse #${state.day.day_number}`, W / 2, 130);
     ctx.font = "800 52px -apple-system, Segoe UI, Arial";
     ctx.fillStyle = state.result.result === "win" ? "#2fbf71" : state.result.result === "tie" ? "#d4a017" : "#e5534b";
     ctx.fillText(headline(), W / 2, 210);
@@ -285,7 +285,7 @@
   $("btn-share-more").addEventListener("click", async () => {
     const cv = drawShare();
     cv.toBlob(async (blob) => {
-      const file = new File([blob], `beat-the-bot-${state.day.day_number}.png`, { type: "image/png" });
+      const file = new File([blob], `verse-${state.day.day_number}.png`, { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try { await navigator.share({ files: [file], text: shareText() }); return; } catch {}
       }
@@ -331,13 +331,13 @@
     }
     state.day = day;
     $("day-label").textContent = `Day #${day.day_number}`;
-    const streak = parseInt(localStorage.getItem("btb_streak") || "0", 10);
-    if (streak > 0 && localStorage.getItem("btb_streak_date")) {
+    const streak = parseInt(localStorage.getItem("verse_streak") || "0", 10);
+    if (streak > 0 && localStorage.getItem("verse_streak_date")) {
       // streak survives only if yesterday was a win - cheap check: last win date is today or yesterday
-      const last = localStorage.getItem("btb_streak_date");
+      const last = localStorage.getItem("verse_streak_date");
       const d = new Date(day.date), l = new Date(last);
       const diff = (d - l) / 86400000;
-      if (diff > 1) { localStorage.setItem("btb_streak", "0"); }
+      if (diff > 1) { localStorage.setItem("verse_streak", "0"); }
       else if (streak > 0) {
         $("landing-streak").textContent = `Streak vs the Bot: ${streak}`;
         $("landing-streak").classList.remove("hidden");

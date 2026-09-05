@@ -1,10 +1,10 @@
 # Beat the Bot - Cloudflare Pages project config.
-name = "beat-the-bot"
+name = "verse-game"
 pages_build_output_dir = "public"
 compatibility_date = "2026-01-01"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "beat-the-bot"
-database_id = "48e243eb-6ff9-4368-9078-043d4f9df017"
+database_name = "verse-game"
+database_id = "cfcfa52c-9b82-43e7-b016-73e1b745efa4"
 migrations_dir = "migrations"

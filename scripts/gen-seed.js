@@ -65,5 +65,5 @@ const rows = seeds.map(([date, word], i) => {
 for (const r of rows) console.log(r.date, r.word, 'bot solves in', r.path.length, '->', r.path.map(p=>p.guess).join(' '));
 const stmts = rows.map(r =>
   `INSERT OR REPLACE INTO days (date, day_number, word, ai_path) VALUES ('${r.date}', ${r.n}, '${r.word}', '${JSON.stringify(r.path)}');`);
-fs.writeFileSync('seed.sql', '-- Beat the Bot - seed days with precomputed Bot paths (node scripts/gen-seed.js)\n'+stmts.join('\n')+'\n');
+fs.writeFileSync('seed.sql', '-- Verse - seed days with precomputed Bot paths (node scripts/gen-seed.js)\n'+stmts.join('\n')+'\n');
 console.log('seed.sql written');

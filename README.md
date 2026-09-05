@@ -1,6 +1,6 @@
-# Beat the Bot
+# Verse
 
-A daily Wordle-style word duel against the Bot. Everyone gets the same 5-letter
+A daily word-guessing duel against the Bot. The word game for the AI era. Everyone gets the same 5-letter
 word each day (player-local date). You guess, the Bot guesses alongside you in
 real time - its scripted run reveals one guess after each of yours. Fewer
 guesses wins. Shareable score: "I beat the Bot in 4."

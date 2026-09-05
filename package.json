@@ -1,5 +1,5 @@
 {
-  "name": "beat-the-bot",
+  "name": "verse",
   "private": true,
   "devDependencies": { "wrangler": "^4.0.0" }
 }
