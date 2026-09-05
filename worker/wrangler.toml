@@ -1,0 +1,14 @@
+name = "verse-seed"
+main = "index.js"
+compatibility_date = "2026-01-01"
+
+[triggers]
+crons = ["5 9 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "verse-game"
+database_id = "cfcfa52c-9b82-43e7-b016-73e1b745efa4"
+
+[ai]
+binding = "AI"

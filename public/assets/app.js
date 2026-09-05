@@ -36,6 +36,8 @@
     return res;
   }
   const emoji = { correct: "\u{1F7E9}", present: "\u{1F7E8}", absent: "\u2B1B" };
+  const botSolved = () => { const b = state.day.bot; return b.length > 0 && b[b.length - 1].fb.every((f) => f === "correct"); };
+  const botScore = () => (botSolved() ? state.day.bot.length : 7);
 
   // ---------- Bot quips (canned, dry, by outcome and margin) ----------
   const QUIPS = {
@@ -46,11 +48,15 @@
     loss_mid: ["Got there first - {b} rounds.", "Close race. Mine this time."],
     loss_blow: ["{b} rounds. I don't lose often.", "Better luck tomorrow."],
     tie: ["Dead heat. Again tomorrow?", "Same number. Great minds."],
+    win_bust: ["I busted. The board is yours.", "Six misses. You still got it. Humbling."],
+    tie_bust: ["We both busted. Dark day.", "Neither of us got it. Tomorrow?"],
   };
   function botQuip() {
-    const { result, num } = state.result, b = state.day.bot.length;
+    const { result, num } = state.result, b = state.day.bot.length, bust = !botSolved();
     const m = Math.abs(num - b);
-    const bucket = result === "tie" ? "tie"
+    const bucket = bust && result === "win" ? "win_bust"
+      : bust && result === "tie" ? "tie_bust"
+      : result === "tie" ? "tie"
       : (result === "win" ? "win" : "loss") + (m >= 3 ? "_blow" : m === 2 ? "_mid" : "_close");
     const lines = QUIPS[bucket];
     let h = 0; for (const c of state.day.date + bucket) h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -136,11 +142,11 @@
     paintRow($("grid-you"), state.guesses.length - 1, g, fb);
     updateKeys(g, fb);
     const solved = g === state.day.word;
-    const n = state.guesses.length, botTotal = state.day.bot.length;
+    const n = state.guesses.length, botTotal = botScore();
     if (solved) {
       setTimeout(() => finish(n < botTotal ? "win" : n === botTotal ? "tie" : "loss"), 900);
     } else if (n >= 6) {
-      setTimeout(() => finish("loss"), 900);
+      setTimeout(() => finish(botTotal === 7 ? "tie" : "loss"), 900);
     }
   }
 
@@ -179,18 +185,18 @@
   }
   function headline() {
     const { result, num } = state.result;
-    const botN = state.day.bot.length;
-    if (result === "win") return `You beat the AI in ${num}.`;
-    if (result === "tie") return `Dead heat - both in ${num}.`;
+    const botN = state.day.bot.length, bust = !botSolved();
+    if (result === "win") return bust ? "You beat the AI - it busted today." : `You beat the AI in ${num}.`;
+    if (result === "tie") return bust ? "Dead heat - you both busted." : `Dead heat - both in ${num}.`;
     if (num === 7) return `The word was ${state.day.word.toUpperCase()}. The AI took ${botN}.`;
     return `The AI got there first - it took ${botN}.`;
   }
   function shareText() {
     const { result, num } = state.result;
-    const botN = state.day.bot.length;
+    const botN = state.day.bot.length, bust = !botSolved();
     const first =
-      result === "win" ? `I beat the AI in ${num}/6 (it took ${botN}).` :
-      result === "tie" ? `Dead heat with the AI - both in ${num}/6.` :
+      result === "win" ? (bust ? `I beat the AI - it busted today. I got it in ${num}/6.` : `I beat the AI in ${num}/6 (it took ${botN}).`) :
+      result === "tie" ? (bust ? "Dead heat - we both busted." : `Dead heat with the AI - both in ${num}/6.`) :
       `The AI beat me - it took ${botN}/6.`;
     return [`Verse #${state.day.day_number}`, first, gridText(state.result.guesses)].join("\n");
   }
