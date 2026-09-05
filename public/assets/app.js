@@ -167,7 +167,7 @@
         body: JSON.stringify({ anon_id: state.anon, date: state.day.date, guesses: state.guesses, result }),
       });
     } catch { /* stats are nice-to-have */ }
-    // the reveal: the Bot's run replays live, row by row, then the verdict
+    // the reveal: the AI's run replays live, row by row, then the verdict
     const steps = state.day.bot;
     buildGrid($("grid-bot"));
     steps.forEach((st, i) => setTimeout(() => paintRow($("grid-bot"), i, st.guess, st.fb), 500 + i * 1500));
@@ -180,18 +180,18 @@
   function headline() {
     const { result, num } = state.result;
     const botN = state.day.bot.length;
-    if (result === "win") return `You beat the Bot in ${num}.`;
+    if (result === "win") return `You beat the AI in ${num}.`;
     if (result === "tie") return `Dead heat - both in ${num}.`;
-    if (num === 7) return `The word was ${state.day.word.toUpperCase()}. The Bot took ${botN}.`;
-    return `The Bot got there first - it took ${botN}.`;
+    if (num === 7) return `The word was ${state.day.word.toUpperCase()}. The AI took ${botN}.`;
+    return `The AI got there first - it took ${botN}.`;
   }
   function shareText() {
     const { result, num } = state.result;
     const botN = state.day.bot.length;
     const first =
-      result === "win" ? `I beat the Bot in ${num}/6 (it took ${botN}).` :
-      result === "tie" ? `Dead heat with the Bot - both in ${num}/6.` :
-      `The Bot beat me - it took ${botN}/6.`;
+      result === "win" ? `I beat the AI in ${num}/6 (it took ${botN}).` :
+      result === "tie" ? `Dead heat with the AI - both in ${num}/6.` :
+      `The AI beat me - it took ${botN}/6.`;
     return [`Verse #${state.day.day_number}`, first, gridText(state.result.guesses)].join("\n");
   }
   function renderResult(stats) {
@@ -207,10 +207,10 @@
     state.result.guesses.forEach((g, i) => paintRow(gy, i, g, feedback(g, state.day.word)));
     const gb = document.createElement("div"); gb.className = "grid mini"; buildGrid(gb);
     state.day.bot.forEach((s, i) => paintRow(gb, i, s.guess, s.fb));
-    rg.appendChild(mk("YOU", gy)); rg.appendChild(mk("THE BOT", gb));
+    rg.appendChild(mk("YOU", gy)); rg.appendChild(mk("THE AI", gb));
     const st = $("result-stats");
     if (stats && stats.players_today >= 100 && stats.beat_pct != null) {
-      st.textContent = `${stats.beat_pct}% of ${stats.players_today} players beat the Bot today.`;
+      st.textContent = `${stats.beat_pct}% of ${stats.players_today} players beat the AI today.`;
     } else {
       st.textContent = "Be one of the first today.";
     }
@@ -259,7 +259,7 @@
       });
     };
     ctx.fillStyle = "#9aa3b2"; ctx.font = "800 30px -apple-system, Arial";
-    ctx.fillText("YOU", W / 4, 285); ctx.fillText("THE BOT", (3 * W) / 4, 285);
+    ctx.fillText("YOU", W / 4, 285); ctx.fillText("THE AI", (3 * W) / 4, 285);
     drawGrid(state.result.guesses, (g) => feedback(g, state.day.word), W / 4, 310, tile);
     drawGrid(state.day.bot.map((s) => s.guess), (g) => state.day.bot.find((s) => s.guess === g).fb, (3 * W) / 4, 310, 44);
     ctx.fillStyle = "#9aa3b2"; ctx.font = "400 34px -apple-system, Arial";
@@ -310,7 +310,7 @@
       return;
     }
     show("screen-game");
-    $("bot-status").textContent = "The Bot is waiting.";
+    $("bot-status").textContent = "The AI is waiting.";
   }
 
   async function init() {
@@ -334,7 +334,7 @@
       const diff = (d - l) / 86400000;
       if (diff > 1) { localStorage.setItem("verse_streak", "0"); }
       else if (streak > 0) {
-        $("landing-streak").textContent = `Streak vs the Bot: ${streak}`;
+        $("landing-streak").textContent = `Streak vs the AI: ${streak}`;
         $("landing-streak").classList.remove("hidden");
       }
     }
