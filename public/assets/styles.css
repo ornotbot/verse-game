@@ -72,3 +72,4 @@ h2 { font-size: 1.5rem; margin-bottom: 16px; }
   #duel { gap: 10px; }
   #result-grids { gap: 14px; }
 }
+.tile.progress { background: #232a38; border-color: #3d4a63; }

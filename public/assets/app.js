@@ -50,9 +50,18 @@
     const row = gridEl.children[rowIdx]; if (!row) return;
     [...row.children].forEach((t, i) => {
       t.textContent = word[i] || "";
-      t.classList.remove("filled", "correct", "present", "absent", "pop");
+      t.classList.remove("filled", "correct", "present", "absent", "progress", "pop");
       if (fb) t.classList.add(fb[i]);
       else if (word[i]) t.classList.add("filled");
+    });
+  }
+  // Bot mid-game rows: progress only - no letters, no colors (no intel leak)
+  function paintProgress(gridEl, rowIdx) {
+    const row = gridEl.children[rowIdx]; if (!row) return;
+    [...row.children].forEach((t) => {
+      t.textContent = "";
+      t.classList.remove("filled", "correct", "present", "absent");
+      t.classList.add("progress");
     });
   }
 
@@ -133,8 +142,7 @@
     clearTimeout(state.botTimer);
     state.botTimer = setTimeout(() => {
       const i = state.botShown;
-      const step = state.day.bot[i];
-      paintRow($("grid-bot"), i, step.guess, step.fb);
+      paintProgress($("grid-bot"), i);
       state.botShown++;
       if (state.botShown >= state.day.bot.length && !state.over) {
         // the Bot solved first (player still going)
@@ -152,8 +160,8 @@
     if (state.over) return;
     state.over = true;
     clearTimeout(state.botTimer);
-    // make sure the Bot's full run is visible on the result
-    for (let i = state.botShown; i < state.day.bot.length; i++) {
+    // reveal: repaint the Bot's full run with letters and colors
+    for (let i = 0; i < state.day.bot.length; i++) {
       paintRow($("grid-bot"), i, state.day.bot[i].guess, state.day.bot[i].fb);
     }
     state.botShown = state.day.bot.length;
