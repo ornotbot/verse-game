@@ -55,13 +55,13 @@
       else if (word[i]) t.classList.add("filled");
     });
   }
-  // Bot mid-game rows: progress only - no letters, no colors (no intel leak)
-  function paintProgress(gridEl, rowIdx) {
+  // Bot mid-game rows: colors only, no letters - a color can't be mapped to an unseen letter
+  function paintProgress(gridEl, rowIdx, fb) {
     const row = gridEl.children[rowIdx]; if (!row) return;
-    [...row.children].forEach((t) => {
+    [...row.children].forEach((t, i) => {
       t.textContent = "";
       t.classList.remove("filled", "correct", "present", "absent");
-      t.classList.add("progress");
+      t.classList.add(fb[i]);
     });
   }
 
@@ -142,7 +142,7 @@
     clearTimeout(state.botTimer);
     state.botTimer = setTimeout(() => {
       const i = state.botShown;
-      paintProgress($("grid-bot"), i);
+      paintProgress($("grid-bot"), i, state.day.bot[i].fb);
       state.botShown++;
       if (state.botShown >= state.day.bot.length && !state.over) {
         // the Bot solved first (player still going)
@@ -323,6 +323,7 @@
       return;
     }
     show("screen-game");
+    $("bot-target").textContent = `The Bot solved today's in ${state.day.bot.length}.`;
     $("bot-status").textContent = "The Bot plays after your first guess.";
   }
 
