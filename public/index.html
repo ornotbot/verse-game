@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Beat the Bot</title>
+  <meta name="description" content="A daily word duel. You and the Bot get the same word. Fewer guesses wins." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header id="topbar">
+    <div id="brand">Beat the Bot</div>
+    <div id="day-label"></div>
+  </header>
+
+  <main id="app">
+    <!-- Landing -->
+    <section id="screen-landing" class="screen active">
+      <h1>A daily word duel.<br>You vs the Bot.</h1>
+      <p class="sub">Same word, same six guesses. The Bot plays alongside you - watch every guess it makes. Fewer guesses wins.</p>
+      <button id="btn-play" class="btn primary big" type="button">Play today's word</button>
+      <p id="landing-streak" class="streak-line hidden"></p>
+      <button id="landing-played" class="btn ghost hidden" type="button">See today's result</button>
+      <p id="landing-error" class="error hidden"></p>
+    </section>
+
+    <!-- Game -->
+    <section id="screen-game" class="screen">
+      <div id="duel">
+        <div id="you-col">
+          <div class="col-label">YOU</div>
+          <div id="grid-you" class="grid"></div>
+        </div>
+        <div id="bot-col">
+          <div class="col-label">THE BOT</div>
+          <div id="grid-bot" class="grid mini"></div>
+          <div id="bot-status" class="muted"></div>
+        </div>
+      </div>
+      <p id="game-msg" class="error hidden"></p>
+      <div id="keyboard"></div>
+    </section>
+
+    <!-- Result -->
+    <section id="screen-result" class="screen">
+      <h2 id="result-line"></h2>
+      <div id="result-grids"></div>
+      <p id="result-stats" class="muted"></p>
+      <div class="share-row">
+        <button id="btn-share-x" class="btn primary" type="button">Share on X</button>
+        <button id="btn-share-linkedin" class="btn primary" type="button">Share on LinkedIn</button>
+        <button id="btn-share-more" class="btn ghost" type="button">More</button>
+      </div>
+      <p id="countdown" class="countdown"></p>
+      <canvas id="share-canvas" width="1080" height="1080" class="hidden"></canvas>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/assets/words.js"></script>
+  <script src="/assets/app.js"></script>
+</body>
+</html>
