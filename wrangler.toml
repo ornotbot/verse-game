@@ -6,5 +6,5 @@ compatibility_date = "2026-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "beat-the-bot"
-database_id = "TODO-paste-database_id"
+database_id = "48e243eb-6ff9-4368-9078-043d4f9df017"
 migrations_dir = "migrations"
